@@ -1,0 +1,100 @@
+---
+title: "margin and win% for HT and FT"
+output: html_document
+---
+
+GOAL:
+Extract Half Time and Full Time scores
+
+Links can only have win or loss matches!
+
+```{r}
+#store the links to all pages required
+
+home.argentina <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=10;template=results;trophy=17;type=team;view=results"
+
+away.argentina <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=10;template=results;type=team;view=results"
+
+home.australia <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=6;template=results;trophy=17;type=team;view=results"
+  
+away.australia <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=6;template=results;type=team;view=results"
+
+home.newzealand <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=8;template=results;trophy=17;type=team;view=results"
+
+away.newzealand <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=8;template=results;type=team;view=results"
+
+home.southafrica <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=5;template=results;trophy=17;type=team;view=results"
+
+away.southafrica <- "http://stats.espnscrum.com/statsguru/rugby/stats/index.html?class=1;filter=advanced;opposition=1;opposition=10;opposition=2;opposition=20;opposition=3;opposition=4;opposition=5;opposition=6;opposition=8;opposition=9;orderby=date;result=1;result=2;size=200;spanmax1=31+Dec+2015;spanmin1=1+Jan+2003;spanval1=span;team=5;template=results;type=team;view=results"
+```
+
+```{r}
+#extract the cells of data
+library(rvest)
+
+home.argentina.html.vector <- readLines(home.argentina)
+
+home.argentina.html.lines <- regmatches(home.argentina.html.vector, regexpr("<td>[[:digit:]]{1,3}</td>", home.argentina.html.vector))
+
+home.argentina <- substr(home.argentina.html.lines, 5, nchar(home.argentina.html.lines)-5)
+
+home.argentina.matrix <- matrix(as.integer(home.argentina), ncol = 4, byrow = TRUE)
+home.argentina.matrix
+```
+
+These are the cells we are interested in.
+
+The pattern is:
+
+FTFor, FTAgainst, HTFor, HTAgainst
+
+```{r}
+#The logic above as a function
+
+extract.score.cells.from.webpage <- function(link){
+  html.vector <- readLines(link)
+  html.lines <- regmatches(html.vector, regexpr("<td>[[:digit:]]{1,3}</td>", html.vector))
+  html.lines.trimmed <- substr(html.lines, 5, nchar(html.lines)-5)
+  matrix <- matrix(as.integer(html.lines.trimmed), ncol = 4, byrow = TRUE)
+  return(matrix)
+}
+
+#Missing data for France vs Australia in 2014
+
+extract.score.cells.from.webpage.special <- function(link){
+  html.vector <- readLines(link)
+  html.lines <- regmatches(html.vector, regexpr("<td>[[:digit:]]{1,3}</td>", html.vector))
+  index <- length(html.lines) - 79
+  html.lines.trimmed <- substr(html.lines, 5, nchar(html.lines)-5)[-c(index,index+1)]
+  matrix <- matrix(as.integer(html.lines.trimmed), ncol = 4, byrow = TRUE)
+  return(matrix)
+}
+```
+
+```{r}
+write.csv(home.argentina.matrix, "./RCHomeAdvantages/home.argentina.matrix.csv")
+
+#Run the function for the other 11 links
+#Then save it as a csv to be safe
+
+away.argentina.matrix <- extract.score.cells.from.webpage(away.argentina)
+write.csv(away.argentina.matrix, "./RCHomeAdvantages/away.argentina.matrix.csv")
+
+home.newzealand.matrix <- extract.score.cells.from.webpage(home.newzealand)
+write.csv(home.newzealand.matrix, "./RCHomeAdvantages/home.newzealand.matrix.csv")
+
+away.newzealand.matrix <- extract.score.cells.from.webpage(away.newzealand)
+write.csv(away.newzealand.matrix, "./RCHomeAdvantages/away.newzealand.matrix.csv")
+
+home.australia.matrix <- extract.score.cells.from.webpage(home.australia)
+write.csv(home.australia.matrix, "./RCHomeAdvantages/home.australia.matrix.csv")
+
+away.australia.matrix <- extract.score.cells.from.webpage.special(away.australia)
+write.csv(away.australia.matrix, "./RCHomeAdvantages/away.australia.matrix.csv")
+
+home.southafrica.matrix <- extract.score.cells.from.webpage(home.southafrica)
+write.csv(home.southafrica.matrix, "./RCHomeAdvantages/home.southafrica.matrix.csv")
+
+away.southafrica.matrix <- extract.score.cells.from.webpage(away.southafrica)
+write.csv(away.southafrica.matrix, "./RCHomeAdvantages/away.southafrica.matrix.csv")
+```

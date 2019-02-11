@@ -1,0 +1,223 @@
+---
+title: "frontend"
+output: html_document
+---
+
+```{r}
+filenames <- list.files("./RCHomeAdvantages")
+filenames
+```
+
+Each column on the matrices represent (from left to right):
+
+FTFor, FTAgainst, HTFor, HTAgainst
+
+```{r}
+#full time margin function
+#input is a nation name (ie "argentina", "australia")
+#output is a one value that determines the height of the bar (average improvement in full time margin at home)
+
+full.time.margin <- function(nation){
+  filenames <- list.files("./RCHomeAdvantages")
+  indexes <- grep(nation, filenames)
+  away.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.margin <- sum(away.df[,1])/length(away.df[,1]) - sum(away.df[,2])/length(away.df[,2])
+  home.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.margin <- sum(home.df[,1])/length(home.df[,1]) - sum(home.df[,2])/length(home.df[,2])
+  return(home.margin - away.margin)
+}
+
+full.time.margin("argentina")
+full.time.margin("australia")
+full.time.margin("newzealand")
+full.time.margin("southafrica")
+```
+
+```{r}
+#half time margin function
+#input is a nation name (ie "argentina", "australia")
+
+half.time.margin <- function(nation){
+  filenames <- list.files("./RCHomeAdvantages")
+  indexes <- grep(nation, filenames)
+  away.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.margin <- sum(away.df[,3])/length(away.df[,3]) - sum(away.df[,4])/length(away.df[,4])
+  home.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.margin <- sum(home.df[,3])/length(home.df[,3]) - sum(home.df[,4])/length(home.df[,4])
+  return(home.margin - away.margin)
+}
+
+half.time.margin("argentina")
+half.time.margin("australia")
+half.time.margin("newzealand")
+half.time.margin("southafrica")
+```
+
+```{r}
+#full time win record function (draw counts as a half win)
+#input is a nation name (ie "argentina", "australia")
+#output = number of home wins - number of away wins
+
+full.time.win.record <- function(nation){
+  filenames <- list.files("./RCHomeAdvantages")
+  
+  indexes <- grep(nation, filenames)
+  
+  away.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.wins <- mean(c(away.df[,1] - away.df[,2]) > 0)*100
+  
+  home.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.wins <- mean(c(home.df[,1] - home.df[,2]) > 0)*100
+  
+  return(home.wins - away.wins)
+}
+
+full.time.win.record("argentina")
+full.time.win.record("australia")
+full.time.win.record("newzealand")
+full.time.win.record("southafrica")
+```
+
+```{r}
+#half time win record function (draw counts as a half win)
+#input is a nation name (ie "argentina", "australia")
+
+half.time.win.record <- function(nation){
+  filenames <- list.files("./RCHomeAdvantages")
+  
+  indexes <- grep(nation, filenames)
+  
+  away.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.wins <- mean(c(away.df[,3] - away.df[,4]) > 0)*100
+  
+  home.df <- read.csv(paste0("./RCHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.wins <- mean(c(home.df[,3] - home.df[,4]) > 0)*100
+  
+  return(home.wins - away.wins)
+}
+
+half.time.win.record("argentina")
+half.time.win.record("australia")
+half.time.win.record("newzealand")
+half.time.win.record("southafrica")
+```
+
+```{r}
+c(full.time.margin("argentina"), half.time.margin("argentina"), full.time.win.record("argentina"), half.time.win.record("argentina"))
+
+c(full.time.margin("australia"), half.time.margin("australia"), full.time.win.record("australia"), half.time.win.record("australia"))
+
+c(full.time.margin("newzealand"), half.time.margin("newzealand"), full.time.win.record("newzealand"), half.time.win.record("newzealand"))
+
+c(full.time.margin("southafrica"), half.time.margin("southafrica"), full.time.win.record("southafrica"), half.time.win.record("southafrica"))
+```
+
+```{r}
+library(plotly)
+
+trace1 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("argentina"), half.time.margin("argentina"), full.time.win.record("argentina"), half.time.win.record("argentina")), 
+  marker = list(
+    color = "blue", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+trace2 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("australia"), half.time.margin("australia"), full.time.win.record("australia"), half.time.win.record("australia")), 
+  marker = list(
+    color = "orange", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+trace3 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("newzealand"), half.time.margin("newzealand"), full.time.win.record("newzealand"), half.time.win.record("newzealand")), 
+  marker = list(
+    color = "black", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+trace4 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("southafrica"), half.time.margin("southafrica"), full.time.win.record("southafrica"), half.time.win.record("southafrica")),
+  marker = list(
+    color = "green", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+data <- list(trace1, trace2, trace3, trace4)
+layout <- list(
+  autosize = FALSE, 
+  barmode = "group", 
+  height = 500, 
+  hovermode = "closest", 
+  margin = list(
+    r = 50, 
+    t = 100, 
+    b = 100, 
+    l = 50, 
+    pad = 4
+  ), 
+  showlegend = FALSE, 
+  title = list(text = "SH Tournament Teams"), 
+  width = 750, 
+  xaxis = list(
+    autorange = TRUE, 
+    categoryarraysrc = "kaitogoto7:6:a73fad", 
+    categoryorder = "array", 
+    domain = c(0, 1), 
+    range = c(-0.5, 3.5), 
+    title = list(text = ""), 
+    type = "category"
+  ), 
+  yaxis = list(
+    autorange = TRUE, 
+    domain = c(0, 1), 
+    range = c(-3.02222222222, 15.4222222222), 
+    title = list(text = ""), 
+    type = "linear"
+  )
+)
+
+
+
+p <- plot_ly()
+
+p <- add_trace(p, x=trace1$x, y=trace1$y, hoverinfo=trace1$hoverinfo, marker=trace1$marker, name=trace1$name, showlegend=trace1$showlegend, type=trace1$type, xaxis=trace1$xaxis, yaxis=trace1$yaxis)
+
+p <- add_trace(p, x=trace2$x, y=trace2$y, hoverinfo=trace2$hoverinfo, marker=trace2$marker, name=trace2$name, showlegend=trace2$showlegend, type=trace2$type, xaxis=trace2$xaxis, yaxis=trace2$yaxis)
+
+p <- add_trace(p, x=trace3$x, y=trace3$y, hoverinfo=trace3$hoverinfo, marker=trace3$marker, name=trace3$name, showlegend=trace3$showlegend, type=trace3$type, xaxis=trace3$xaxis, yaxis=trace3$yaxis)
+
+p <- add_trace(p, x=trace4$x, y=trace4$y, hoverinfo=trace4$hoverinfo, marker=trace4$marker, name=trace4$name, showlegend=trace4$showlegend, type=trace4$type, xaxis=trace4$xaxis, yaxis=trace4$yaxis)
+
+p <- layout(p, autosize=layout$autosize, barmode=layout$barmode, height=layout$height, hovermode=layout$hovermode, margin=layout$margin, showlegend=layout$showlegend, width=layout$width, xaxis=layout$xaxis, yaxis=layout$yaxis)
+
+p
+
+#Sys.setenv("plotly_username"="kaitogoto7")
+#Sys.setenv("plotly_api_key"="insert_api_key")
+#api_create(p, filename = "SH Tournament Teams")
+```

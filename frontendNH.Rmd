@@ -1,0 +1,275 @@
+---
+title: "frontend"
+output: html_document
+---
+
+```{r}
+filenames <- list.files("./6nationsHomeAdvantages")
+filenames
+```
+
+Each column on the matrices represent (from left to right):
+
+FTFor, FTAgainst, HTFor, HTAgainst
+
+```{r}
+#full time margin function
+#input is a nation name (ie "england", "france")
+#output is a one value that determines the height of the bar (average improvement in full time margin at home)
+
+full.time.margin <- function(nation){
+  filenames <- list.files("./6nationsHomeAdvantages")
+  indexes <- grep(nation, filenames)
+  away.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.margin <- sum(away.df[,1])/length(away.df[,1]) - sum(away.df[,2])/length(away.df[,2])
+  home.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.margin <- sum(home.df[,1])/length(home.df[,1]) - sum(home.df[,2])/length(home.df[,2])
+  return(home.margin - away.margin)
+}
+
+full.time.margin("england")
+full.time.margin("france")
+full.time.margin("ireland")
+full.time.margin("italy")
+full.time.margin("scotland")
+full.time.margin("wales")
+```
+
+```{r}
+#half time margin function
+#input is a nation name (ie "england", "france")
+
+half.time.margin <- function(nation){
+  filenames <- list.files("./6nationsHomeAdvantages")
+  indexes <- grep(nation, filenames)
+  away.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.margin <- sum(away.df[,3])/length(away.df[,3]) - sum(away.df[,4])/length(away.df[,4])
+  home.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.margin <- sum(home.df[,3])/length(home.df[,3]) - sum(home.df[,4])/length(home.df[,4])
+  return(home.margin - away.margin)
+}
+
+half.time.margin("england")
+half.time.margin("france")
+half.time.margin("ireland")
+half.time.margin("italy")
+half.time.margin("scotland")
+half.time.margin("wales")
+```
+
+```{r}
+#full time win record function (draw counts as a half win)
+#input is a nation name (ie "england", "france")
+#output = number of home wins - number of away wins
+
+full.time.win.record <- function(nation){
+  filenames <- list.files("./6nationsHomeAdvantages")
+  
+  indexes <- grep(nation, filenames)
+  
+  away.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.wins <- mean(c(away.df[,1] - away.df[,2]) > 0)*100
+  
+  home.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.wins <- mean(c(home.df[,1] - home.df[,2]) > 0)*100
+  
+  return(home.wins - away.wins)
+}
+
+full.time.win.record("england")
+full.time.win.record("france")
+full.time.win.record("ireland")
+full.time.win.record("italy")
+full.time.win.record("scotland")
+full.time.win.record("wales")
+```
+
+```{r}
+#half time win record function (draw counts as a half win)
+#input is a nation name (ie "england", "france")
+
+half.time.win.record <- function(nation){
+  filenames <- list.files("./6nationsHomeAdvantages")
+  
+  indexes <- grep(nation, filenames)
+  
+  away.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[1]]))[,-c(1)] #away csv is read
+  away.wins <- mean(c(away.df[,3] - away.df[,4]) > 0)*100
+  
+  home.df <- read.csv(paste0("./6nationsHomeAdvantages/", filenames[indexes[2]]))[,-c(1)] #home csv is read
+  home.wins <- mean(c(home.df[,3] - home.df[,4]) > 0)*100
+  
+  return(home.wins - away.wins)
+}
+
+half.time.win.record("england")
+half.time.win.record("france")
+half.time.win.record("ireland")
+half.time.win.record("italy")
+half.time.win.record("scotland")
+half.time.win.record("wales")
+```
+
+```{r}
+c(full.time.margin("england"), half.time.margin("england"), full.time.win.record("england"), half.time.win.record("england"))
+
+c(full.time.margin("france"), half.time.margin("france"), full.time.win.record("france"), half.time.win.record("france"))
+
+c(full.time.margin("ireland"), half.time.margin("ireland"), full.time.win.record("ireland"), half.time.win.record("ireland"))
+
+c(full.time.margin("italy"), half.time.margin("italy"), full.time.win.record("italy"), half.time.win.record("italy"))
+
+c(full.time.margin("scotland"), half.time.margin("scotland"), full.time.win.record("scotland"), half.time.win.record("scotland"))
+
+c(full.time.margin("wales"), half.time.margin("wales"), full.time.win.record("wales"), half.time.win.record("wales"))
+```
+
+```{r}
+library(plotly)
+
+
+
+trace1 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("england"), half.time.margin("england"), full.time.win.record("england"), half.time.win.record("england")), 
+  marker = list(
+    color = "gray", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+
+
+trace2 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("france"), half.time.margin("france"), full.time.win.record("france"), half.time.win.record("france")), 
+  marker = list(
+    color = "blue", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+
+
+trace3 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("ireland"), half.time.margin("ireland"), full.time.win.record("ireland"), half.time.win.record("ireland")), 
+  marker = list(
+    color = "green", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+
+
+trace4 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("italy"), half.time.margin("italy"), full.time.win.record("italy"), half.time.win.record("italy")),
+  marker = list(
+    color = "deepskyblue", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+trace5 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("scotland"), half.time.margin("scotland"), full.time.win.record("scotland"), half.time.win.record("scotland")), 
+  marker = list(
+    color = "purple", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+trace6 <- list(
+  x = c(" Full Time Margin", " Half Time Margin", "Full Time Wins", "Half Time Wins"), 
+  y = c(full.time.margin("wales"), half.time.margin("wales"), full.time.win.record("wales"), half.time.win.record("wales")),
+  marker = list(
+    color = "red", 
+    line = list(color = "transparent")
+  ), 
+  showlegend = FALSE, 
+  type = "bar", 
+  xaxis = "x", 
+  yaxis = "y"
+)
+
+
+
+data <- list(trace1, trace2, trace3, trace4, trace5, trace6)
+layout <- list(
+  autosize = FALSE, 
+  barmode = "group", 
+  height = 500, 
+  hovermode = "closest", 
+  margin = list(
+    r = 50, 
+    t = 100, 
+    b = 100, 
+    l = 50, 
+    pad = 4
+  ), 
+  showlegend = FALSE, 
+  title = list(text = "NH Tournament Teams"), 
+  width = 750, 
+  xaxis = list(
+    autorange = TRUE, 
+    categoryarraysrc = "kaitogoto7:6:a73fad", 
+    categoryorder = "array", 
+    domain = c(0, 1), 
+    range = c(-0.5, 3.5), 
+    title = list(text = ""), 
+    type = "category"
+  ), 
+  yaxis = list(
+    autorange = TRUE, 
+    domain = c(0, 1), 
+    range = c(-3.02222222222, 15.4222222222), 
+    title = list(text = ""), 
+    type = "linear"
+  )
+)
+
+
+
+p <- plot_ly()
+
+p <- add_trace(p, x=trace1$x, y=trace1$y, hoverinfo=trace1$hoverinfo, marker=trace1$marker, name=trace1$name, showlegend=trace1$showlegend, type=trace1$type, xaxis=trace1$xaxis, yaxis=trace1$yaxis)
+
+p <- add_trace(p, x=trace2$x, y=trace2$y, hoverinfo=trace2$hoverinfo, marker=trace2$marker, name=trace2$name, showlegend=trace2$showlegend, type=trace2$type, xaxis=trace2$xaxis, yaxis=trace2$yaxis)
+
+p <- add_trace(p, x=trace3$x, y=trace3$y, hoverinfo=trace3$hoverinfo, marker=trace3$marker, name=trace3$name, showlegend=trace3$showlegend, type=trace3$type, xaxis=trace3$xaxis, yaxis=trace3$yaxis)
+
+p <- add_trace(p, x=trace4$x, y=trace4$y, hoverinfo=trace4$hoverinfo, marker=trace4$marker, name=trace4$name, showlegend=trace4$showlegend, type=trace4$type, xaxis=trace4$xaxis, yaxis=trace4$yaxis)
+
+p <- add_trace(p, x=trace5$x, y=trace5$y, hoverinfo=trace5$hoverinfo, marker=trace5$marker, name=trace5$name, showlegend=trace5$showlegend, type=trace5$type, xaxis=trace5$xaxis, yaxis=trace5$yaxis)
+
+p <- add_trace(p, x=trace6$x, y=trace6$y, hoverinfo=trace6$hoverinfo, marker=trace6$marker, name=trace6$name, showlegend=trace6$showlegend, type=trace6$type, xaxis=trace6$xaxis, yaxis=trace6$yaxis)
+
+p <- layout(p, autosize=layout$autosize, barmode=layout$barmode, height=layout$height, hovermode=layout$hovermode, margin=layout$margin, showlegend=layout$showlegend, width=layout$width, xaxis=layout$xaxis, yaxis=layout$yaxis)
+
+p
+
+#Sys.setenv("plotly_username"="kaitogoto7")
+#Sys.setenv("plotly_api_key"="insert_api_key_here")
+#api_create(p, filename = "NH Tournament Teams")
+```
